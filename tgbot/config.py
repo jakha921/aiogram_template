@@ -8,6 +8,7 @@ class TgBot:
     skip_updates: bool
     admins_id: list
     use_webhook: bool
+    use_db: bool
     use_redis: bool
     redis_host: str
     redis_port: int
@@ -62,6 +63,7 @@ def load_config(path: str) -> Config:
             skip_updates=cast_bool(tg_bot["skip_updates"]),
             admins_id=cast_str_list(tg_bot["admins_id"]),
             use_webhook=cast_bool(tg_bot.get("use_webhook")),
+            use_db=cast_bool(tg_bot.get("use_db")),
             use_redis=cast_bool(tg_bot.get("use_redis")),
             redis_host=tg_bot.get("redis_host"),
             redis_port=tg_bot.getint("redis_port"),

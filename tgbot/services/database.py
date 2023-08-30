@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
@@ -9,15 +11,25 @@ from tgbot.services.db_base import Base
 
 async def create_db_session(config: Config) -> AsyncSession:
     """Create DB session"""
-    auth_data = f"{config.db.user}:{config.db.password}" \
-        f"@{config.db.host}:{config.db.port}/{config.db.database}"
+    if config.tg_bot.use_db:
+        auth_data = f"{config.db.user}:{config.db.password}" \
+                    f"@{config.db.host}:{config.db.port}/{config.db.database}"
 
-    db_uri = f"postgresql://{auth_data}"
-    if not database_exists(db_uri):
-        # create database if not exists
-        create_database(db_uri)
+        db_uri = f"postgresql://{auth_data}"
+        if not database_exists(db_uri):
+            # create database if not exists
+            create_database(db_uri)
 
-    db_uri = f"postgresql+asyncpg://{auth_data}"
+        db_uri = f"postgresql+asyncpg://{auth_data}"
+    else:
+        # SQLite configuration
+        db_path = os.path.join(os.getcwd(), "db.sqlite")
+        db_uri = f"sqlite+aiosqlite:///{db_path}"
+
+        if not os.path.exists(db_path):
+            # create database if not exists
+            open(db_path, "w").close()
+
     engine = create_async_engine(
         db_uri,
         future=True

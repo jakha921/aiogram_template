@@ -4,12 +4,16 @@ from sqlalchemy.orm import sessionmaker
 
 from tgbot.services.db_base import Base
 
+from tgbot.config import load_config
+
+# load config from bot.ini file
+config = load_config("bot.ini")
+
 
 class TGUser(Base):
     """Telegram user model"""
     __tablename__ = "telegram_users"
-    id = Column(BigInteger, primary_key=True)
-    telegram_id = Column(BigInteger, unique=True)
+    telegram_id = Column(BigInteger, unique=True, primary_key=True)
     firstname = Column(String(length=100))
     lastname = Column(String(length=100))
     username = Column(String(length=100), nullable=True)
@@ -37,16 +41,32 @@ class TGUser(Base):
                        ) -> 'TGUser':
         """Add new user into DB"""
         async with db_session() as db_session:
-            sql = insert(cls).values(telegram_id=telegram_id,
-                                     firstname=firstname,
-                                     lastname=lastname,
-                                     username=username,
-                                     phone=phone,
-                                     lang_code=lang_code).returning('*')
-            result = await db_session.execute(sql)
-            await db_session.commit()
-            return result.scalar()
+            values = {
+                'telegram_id': telegram_id,
+                'firstname': firstname,
+                'lastname': lastname,
+                'username': username,
+                'phone': phone,
+                'lang_code': lang_code,
+            }
+            sql = insert(cls).values(**values)
 
+            if db_session.bind.dialect.name == 'sqlite':
+                # SQLite specific: Execute the insert and retrieve the last inserted rowid
+                result = await db_session.execute(sql)
+                last_row_id = result.lastrowid
+            else:
+                # For other databases (e.g., PostgreSQL), use RETURNING to get the inserted record
+                sql = sql.returning('*')
+                result = await db_session.execute(sql)
+                inserted_user = result.fetchone()
+                last_row_id = inserted_user.id  # Assuming 'id' is the primary key
+
+            await db_session.commit()
+
+            # After the insert, retrieve the newly inserted user
+            inserted_user = await cls.get_user(db_session, last_row_id)
+            return inserted_user
 
     @classmethod
     async def update_user(cls, db_session: sessionmaker, telegram_id: int, updated_fields: dict) -> 'TGUser':
@@ -62,7 +82,7 @@ class TGUser(Base):
         """Returns all users from DB"""
         async with db_session() as db_session:
             # select all columns from table
-            sql = select(*cls.__table__.columns).order_by(cls.id)
+            sql = select(*cls.__table__.columns).order_by(cls.telegram_id)
             result = await db_session.execute(sql)
             users: list = result.fetchall()
         return users
@@ -71,7 +91,7 @@ class TGUser(Base):
     async def users_count(cls, db_session: sessionmaker) -> int:
         """Counts all users in the database"""
         async with db_session() as db_session:
-            sql = select([func.count(cls.id)]).select_from(cls)
+            sql = select([func.count(cls.telegram_id)]).select_from(cls)
             request = await db_session.execute(sql)
             count = request.scalar()
         return count

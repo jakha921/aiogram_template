@@ -10,3 +10,6 @@ logs/
 *.zip
 *.log
 .DS_Store
+.idea/*
+*.pyc
+*.sqlite
