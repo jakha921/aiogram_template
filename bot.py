@@ -18,7 +18,6 @@ from tgbot.services.database import create_db_session
 from tgbot.handlers.admin import register_admin
 from tgbot.handlers.user import register_user
 
-
 # load config from bot.ini file
 config = load_config("bot.ini")
 
@@ -82,6 +81,7 @@ async def on_startup(dp: Dispatcher):
     """Startup function"""
     init_logger()
     logger.success("Starting the bot...")
+    logger.success("Postgres database is used" if config.tg_bot.use_db else "SQLite database is used")
 
     if config.tg_bot.use_redis:
         # use redis storage for FSM
@@ -127,6 +127,7 @@ async def on_shutdown(dp: Dispatcher):
     await dp.storage.wait_closed()
     await dp.bot.session.close()
     logger.success("Bot stopped!")
+
 
 if __name__ == "__main__":
     if config.tg_bot.use_webhook:
