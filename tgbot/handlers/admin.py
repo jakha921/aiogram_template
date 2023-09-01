@@ -8,10 +8,10 @@ from tgbot.misc.broadcast import broadcast
 from tgbot.misc.utils import Map
 
 
-async def admin_start(m: Message, texts: Map):
+async def admin_start(msg: Message, texts: Map):
     """Admin start command handler"""
-    logger.info(f'Admin {m.from_user.id} opened admin panel')
-    await m.reply(texts.admin.hi)
+    logger.info(f'Admin {msg.from_user.id} opened admin panel')
+    await msg.reply(texts.admin.hi)
 
 
 async def admin_stats(m: Message, db_session: AsyncSession, texts: Map):
