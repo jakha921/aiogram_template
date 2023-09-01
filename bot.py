@@ -116,6 +116,13 @@ async def on_startup(dp: Dispatcher):
             await bot.set_webhook(WEBHOOK_URL)
     logger.success("Bot started!")
 
+    # notify admins that bot has been started
+    for admin in config.tg_bot.admins_id:
+        try:
+            await dp.bot.send_message(admin, "Bot started")
+        except Exception as e:
+            logger.exception(e)
+
 
 async def on_shutdown(dp: Dispatcher):
     """Shutdown function"""
