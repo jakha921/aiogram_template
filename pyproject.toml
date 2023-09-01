@@ -2,7 +2,7 @@
 name = "aiogram_template"
 version = "0.1.0"
 description = "Aiogram template for telegram bots"
-authors = ["Nodir Malikov <nodirmalikov2004@yandex.ru>"]
+authors = ["Jakhongir Ruzibaev <jakha921@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
