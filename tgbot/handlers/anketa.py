@@ -1,20 +1,3 @@
-# State
-
-```python
-# state.py
-
-from aiogram.dispatcher.filters.state import State, StatesGroup
-
-
-class Test(StatesGroup):
-    Q1 = State()
-    Q2 = State()
-    Q3 = State()
-```
-
-```python
-# anketa.py
-
 import re
 
 from aiogram import Dispatcher
@@ -146,16 +129,3 @@ def register_testing(dp: Dispatcher):
         third_question,
         state=Test.Q3
     )
-```
-
-```python
-# bot.py
-
-def register_all_handlers(dp: Dispatcher):
-    """Register all handlers"""
-    register_admin(dp)
-    register_user(dp)
-    register_testing(dp)
-    register_echo(dp)
-```
-
