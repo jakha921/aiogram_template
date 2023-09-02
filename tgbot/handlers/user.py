@@ -1,4 +1,5 @@
 from aiogram import Dispatcher
+from aiogram.dispatcher.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 from aiogram.types.reply_keyboard import ReplyKeyboardRemove
 from aiogram.dispatcher.handler import ctx_data
@@ -13,16 +14,24 @@ from tgbot.misc.utils import Map, find_button_text
 from tgbot.services.database import AsyncSession
 
 
-async def user_start(m: Message, texts: Map):
+# deep_linking
+async def user_start(msg: Message, texts: Map):
     """User start command handler"""
-    logger.info(f'User {m.from_user.id} started the bot')
-    await m.reply(texts.user.hi.format(mention=m.from_user.get_mention()))
+    logger.info(f'User {msg.from_user.id} started the bot')
+
+    # use deep_linking to get deep link data
+    deep_link = msg.get_args()
+
+    text = texts.user.hi.format(mention=msg.from_user.get_mention())
+    if deep_link:
+        text += f'\n\nYou came with deep link: {deep_link}'
+    await msg.reply(text)
 
 
-async def user_me(m: Message, db_user: TGUser, texts: Map):
+async def user_me(msg: Message, db_user: TGUser, texts: Map):
     """User me command handler"""
-    logger.info(f'User {m.from_user.id} requested his info')
-    await m.reply(texts.user.me.format(
+    logger.info(f'User {msg.from_user.id} requested his info')
+    await msg.reply(texts.user.me.format(
         telegram_id=db_user.telegram_id,
         firstname=db_user.firstname,
         lastname=db_user.lastname,
@@ -31,23 +40,23 @@ async def user_me(m: Message, db_user: TGUser, texts: Map):
         lang_code=db_user.lang_code))
 
 
-async def user_close_reply_keyboard(m: Message, texts: Map):
+async def user_close_reply_keyboard(msg: Message, texts: Map):
     """User close reply keyboard button handler"""
-    logger.info(f'User {m.from_user.id} closed reply keyboard')
-    await m.reply(texts.user.close_reply_keyboard, reply_markup=ReplyKeyboardRemove())
+    logger.info(f'User {msg.from_user.id} closed reply keyboard')
+    await msg.reply(texts.user.close_reply_keyboard, reply_markup=ReplyKeyboardRemove())
 
 
-async def user_phone(m: Message, texts: Map):
+async def user_phone(msg: Message, texts: Map):
     """User phone command handler"""
-    logger.info(f'User {m.from_user.id} requested phone number')
-    await m.reply(texts.user.phone, reply_markup=await phone_number(texts))
+    logger.info(f'User {msg.from_user.id} requested phone number')
+    await msg.reply(texts.user.phone, reply_markup=await phone_number(texts))
 
 
-async def user_phone_sent(m: Message, texts: Map, db_user: TGUser, db_session: AsyncSession):
+async def user_phone_sent(msg: Message, texts: Map, db_user: TGUser, db_session: AsyncSession):
     """User contact phone receiver handler"""
-    logger.info(f'User {m.from_user.id} sent phone number')
+    logger.info(f'User {msg.from_user.id} sent phone number')
 
-    number = m.contact.phone_number
+    number = msg.contact.phone_number
 
     # if number not start with +, add +
     if not number.startswith('+'):
@@ -57,13 +66,13 @@ async def user_phone_sent(m: Message, texts: Map, db_user: TGUser, db_session: A
     await TGUser.update_user(db_session,
                              telegram_id=db_user.telegram_id,
                              updated_fields={'phone': number})
-    await m.reply(texts.user.phone_saved, reply_markup=ReplyKeyboardRemove())
+    await msg.reply(texts.user.phone_saved, reply_markup=ReplyKeyboardRemove())
 
 
-async def user_lang(m: Message, texts: Map):
+async def user_lang(msg: Message, texts: Map):
     """User lang command handler"""
-    logger.info(f'User {m.from_user.id} requested language')
-    await m.reply(texts.user.lang, reply_markup=await choose_language(texts))
+    logger.info(f'User {msg.from_user.id} requested language')
+    await msg.reply(texts.user.lang, reply_markup=await choose_language(texts))
 
 
 async def user_lang_choosen(cb: CallbackQuery, callback_data: dict,
@@ -84,8 +93,10 @@ async def user_lang_choosen(cb: CallbackQuery, callback_data: dict,
 def register_user(dp: Dispatcher):
     dp.register_message_handler(
         user_start,
-        commands=["start"],
-        state="*"
+        CommandStart(),
+        # commands=["/start"],
+        # commands=["start"],
+        state="*",
     )
     dp.register_message_handler(
         user_me,

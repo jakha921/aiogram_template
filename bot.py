@@ -11,6 +11,7 @@ from aiogram.types.bot_command_scope import BotCommandScopeDefault
 
 from tgbot.config import load_config
 from tgbot.filters import role, reply_kb
+from tgbot.handlers.echo import register_echo
 from tgbot.middlewares.throtling import ThrottlingMiddleware
 from tgbot.middlewares.db import DbMiddleware
 from tgbot.middlewares.translate import TranslationMiddleware
@@ -64,6 +65,7 @@ def register_all_handlers(dp: Dispatcher):
     """Register all handlers"""
     register_admin(dp)
     register_user(dp)
+    register_echo(dp)
 
 
 async def set_bot_commands(bot: Bot):

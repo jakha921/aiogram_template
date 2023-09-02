@@ -1,45 +1,3 @@
-# Filters(Deep link, Command, CommandStart, CommandHelp, ContentType, Text, Regexp)
-
-## Deep link
-
-### Deep link to a specific filter
-
-```text
-https://t.me/test921_python_bot?start=aiogram-lessons
-```
-
-```python
-# user.py
-from aiogram.dispatcher.filters import CommandStart
-
-
-# deep_linking
-async def user_start(msg: Message, texts: Map):
-    """User start command handler"""
-    logger.info(f'User {msg.from_user.id} started the bot')
-
-    # use deep_linking to get deep link data
-    deep_link = msg.get_args()
-
-    text = texts.user.hi.format(mention=msg.from_user.get_mention())
-    if deep_link:
-        text += f'\n\nYou came with deep link: {deep_link}'
-    await msg.reply(text)
-
-
-def register_user(dp: Dispatcher):
-    dp.register_message_handler(
-        user_start,
-        CommandStart(),
-        # commands=["/start"],
-        # commands=["start"],
-        state="*",
-    )
-```
-
-```python
-# echo.py
-
 from aiogram import types
 
 from aiogram import Dispatcher
@@ -131,14 +89,3 @@ def register_echo(dp: Dispatcher):
         bot_echo,
         state="*",  # for all states
     )
-```
-
-```python
-# bot.py
-
-def register_all_handlers(dp: Dispatcher):
-    """Register all handlers"""
-    register_admin(dp)
-    register_user(dp)
-    register_echo(dp)
-```
