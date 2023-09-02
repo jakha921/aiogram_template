@@ -13,6 +13,7 @@ from tgbot.config import load_config
 from tgbot.filters import role, reply_kb
 from tgbot.handlers.anketa import register_testing
 from tgbot.handlers.echo import register_echo
+from tgbot.handlers.menu import register_menu
 from tgbot.middlewares.throtling import ThrottlingMiddleware
 from tgbot.middlewares.db import DbMiddleware
 from tgbot.middlewares.translate import TranslationMiddleware
@@ -67,6 +68,7 @@ def register_all_handlers(dp: Dispatcher):
     register_admin(dp)
     register_user(dp)
     register_testing(dp)
+    register_menu(dp)
     register_echo(dp)
 
 

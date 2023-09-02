@@ -1,151 +1,125 @@
-# State
+# Reply Keyboards
 
 ```python
-# state.py
+# reply.py
 
-from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+
+from tgbot.misc.utils import Map
 
 
-class Test(StatesGroup):
-    Q1 = State()
-    Q2 = State()
-    Q3 = State()
+async def menu_keyboard():
+    """Menu inline keyboard"""
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="🍣 Sushi"),
+            ],
+            [
+                KeyboardButton(text="🍕 Pizza"),
+                KeyboardButton(text="🍔 Burger"),
+            ]
+        ],
+        resize_keyboard=True,
+    )
+    return keyboard
+
+
+async def type_sushi_keyboard():
+    """Type of sushi reply keyboard"""
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="🐟 Fish"),
+                KeyboardButton(text="🍚 Rice"),
+            ],
+            [
+                KeyboardButton(text="🍗 Chicken"),
+                KeyboardButton(text="🥑 Vegetarian"),
+                KeyboardButton(text="🥩 Meat"),
+            ],
+            [
+                KeyboardButton(text="📋 Menu"),
+            ]
+        ],
+        resize_keyboard=True,
+    )
+    return keyboard
+
+
+async def phone_number(texts: Map):
+    """Phone number inline keyboard"""
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text=texts.user.kb.reply.phone, request_contact=True)
+            ],
+            # location
+            [
+                KeyboardButton(text="📍 Location", request_location=True)
+            ],
+            [
+                KeyboardButton(text=texts.user.kb.reply.close)
+            ],
+        ],
+        resize_keyboard=True,
+    )
+    return keyboard
 ```
 
 ```python
-# anketa.py
-
-import re
-
+# handlers/menu.py
 from aiogram import Dispatcher
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command
-from aiogram.types import Message
-from loguru import logger
+from aiogram.types import Message, ReplyKeyboardRemove
 
-from tgbot.misc.states import Test
+from tgbot.keyboards.reply import menu_keyboard, type_sushi_keyboard
 
 
-async def start_testing(msg: Message):
+async def show_menu(msg: Message):
     """Bot help handler"""
-    logger.info(f'User {msg.from_user.id} started testing')
-    await msg.answer(f"Testing started.\n"
-                     "Please, answer the questions.\n"
-                     "1. What is your name?"
+    await msg.answer("Menu", reply_markup=await menu_keyboard())
+
+
+async def sushi(msg: Message):
+    """Bot help handler"""
+    await msg.answer("Good choice!")
+    await msg.answer("What kind of sushi do you want?", reply_markup=await type_sushi_keyboard())
+
+
+async def sushi_type(msg: Message):
+    """Bot help handler"""
+    await msg.answer("Thanks for your choice!\n"
+                     "We will prepare your order as soon as possible",
+                     reply_markup=ReplyKeyboardRemove()
                      )
 
-    await Test.Q1.set()
-    # await Test.first()
 
-
-async def first_question(msg: Message, state: FSMContext):
+async def fast_food(msg: Message):
     """Bot help handler"""
-    logger.info(f'User {msg.from_user.id} answered the first question')
-
-    # Check answer length (not less than 3 symbols) and if it's ok ask next question
-    if len(msg.text) < 3:
-        await msg.answer("Your name is too short.\n"
-                         "Please, try again."
-                         )
-        return
-
-    # Check for numbers in the answer
-    if any(map(str.isdigit, msg.text)):
-        await msg.answer("Your name is not valid.\n"
-                         "Name can't contain numbers.\n"
-                         "Please, try again."
-                         )
-        return
-
-    # Save answer
-    await state.update_data(name=msg.text)
-    # await state.update_data(
-    #     {
-    #         "name": msg.text
-    #     }
-    # )
-
-    await msg.answer(f"How old are you, {msg.text}?")
-
-    # Go to the next question
-    await Test.Q2.set()
-    # await Test.next()
-
-
-async def second_question(msg: Message, state: FSMContext):
-    """Bot help handler"""
-    logger.info(f'User {msg.from_user.id} answered the second question')
-
-    # check answer
-    if not msg.text.isdigit():
-        await msg.answer("Your age is not valid.\n"
-                         "Age can contain only numbers.\n"
-                         "Please, try again."
-                         )
-        return
-
-    # Save answer
-    await state.update_data(age=msg.text)
-
-    # Get name
-    data = await state.get_data()
-    name = data.get("name")
-
-    await msg.answer(f"Ok, {name}.\n"
-                     f"Now You need to send me your email."
+    await msg.answer("At less 10 minutes\n"
+                     "Thanks for your patience",
+                     reply_markup=ReplyKeyboardRemove()
                      )
 
-    # Go to the next question
-    await Test.Q3.set()
 
-
-async def third_question(msg: Message, state: FSMContext):
-    """Bot help handler"""
-    logger.info(f'User {msg.from_user.id} answered the third question')
-
-    # Get previous answer
-    data = await state.get_data()
-    name = data.get("name")
-    age = data.get("age")
-
-    # Check answer
-    if not re.match(r"[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+", msg.text):
-        await msg.answer("Your email is not valid.\n"
-                         "Please, try again."
-                         )
-        return
-
-    # Send message with all answers
-    await msg.answer(f"Thank you for your answers.\n")
-    await msg.answer(f"{name}, We will send you a letter to {msg.text}.\n"
-                     f"We will not tell anyone that you are {age} years old."
-                     )
-    await msg.answer("That's all. Thank you for testing.")
-
-    # Finish conversation
-    await state.finish()  # finish the current state
-    # await state.reset_state() # finish all states and reset data
-    # await state.reset_state(with_data=False) # finish all states but don't reset data
-
-
-def register_testing(dp: Dispatcher):
+def register_menu(dp: Dispatcher):
     dp.register_message_handler(
-        start_testing,
-        Command("test"),
-        state=None
-    )
+        show_menu,
+        text=["📋 Menu", "/menu"]
+    ),
     dp.register_message_handler(
-        first_question,
-        state=Test.Q1
-    )
+        sushi,
+        text="🍣 Sushi",
+    ),
     dp.register_message_handler(
-        second_question,
-        state=Test.Q2
-    )
+        fast_food,
+        text=["🍕 Pizza", "🍔 Burger"]
+    ),
     dp.register_message_handler(
-        third_question,
-        state=Test.Q3
-    )
+        sushi_type,
+        text=["🐟 Fish", "🍚 Rice", "🍗 Chicken", "🥑 Vegetarian", "🥩 Meat"]
+    ),
+
 ```
 
 ```python
@@ -156,6 +130,7 @@ def register_all_handlers(dp: Dispatcher):
     register_admin(dp)
     register_user(dp)
     register_testing(dp)
+    register_menu(dp)
     register_echo(dp)
 ```
 
