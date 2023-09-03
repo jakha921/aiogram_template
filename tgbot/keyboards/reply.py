@@ -13,6 +13,9 @@ async def menu_keyboard():
             [
                 KeyboardButton(text="🍕 Pizza"),
                 KeyboardButton(text="🍔 Burger"),
+            ],
+            [
+                KeyboardButton(text="📋 New menu"),
             ]
         ],
         resize_keyboard=True,
