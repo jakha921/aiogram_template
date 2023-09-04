@@ -12,6 +12,7 @@ from aiogram.types.bot_command_scope import BotCommandScopeDefault
 from tgbot.config import load_config
 from tgbot.filters import role, reply_kb
 from tgbot.handlers.anketa import register_testing
+from tgbot.handlers.formating_text import register_formatting_text
 from tgbot.handlers.new_menu import register_new_menu
 from tgbot.handlers.echo import register_echo
 from tgbot.handlers.menu import register_menu
@@ -71,6 +72,7 @@ def register_all_handlers(dp: Dispatcher):
     register_testing(dp)
     register_menu(dp)
     register_new_menu(dp)
+    register_formatting_text(dp)
     register_echo(dp)
 
 
