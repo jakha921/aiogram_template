@@ -6,6 +6,7 @@ from aiogram.dispatcher.handler import ctx_data
 
 from loguru import logger
 
+from tgbot.filters.private import PrivateChatFilter
 from tgbot.keyboards.inline import choose_language, cd_choose_lang
 from tgbot.keyboards.reply import phone_number
 from tgbot.middlewares.translate import TranslationMiddleware
@@ -17,7 +18,7 @@ from tgbot.services.database import AsyncSession
 # deep_linking
 async def user_start(msg: Message, texts: Map):
     """User start command handler"""
-    logger.info(f'User {msg.from_user.id} started the bot')
+    logger.info(f'User {msg.from_user.id} in private chat started the bot')
 
     # use deep_linking to get deep link data
     deep_link = msg.get_args()
@@ -93,10 +94,11 @@ async def user_lang_choosen(cb: CallbackQuery, callback_data: dict,
 def register_user(dp: Dispatcher):
     dp.register_message_handler(
         user_start,
-        CommandStart(),
+        PrivateChatFilter(),
+        CommandStart()
         # commands=["/start"],
         # commands=["start"],
-        state="*",
+        # state="*",
     )
     dp.register_message_handler(
         user_me,

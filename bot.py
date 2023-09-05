@@ -11,8 +11,13 @@ from aiogram.types.bot_command_scope import BotCommandScopeDefault
 
 from tgbot.config import load_config
 from tgbot.filters import role, reply_kb
+from tgbot.filters.group import GroupChatFilter
+from tgbot.filters.private import PrivateChatFilter
 from tgbot.handlers.anketa import register_testing
 from tgbot.handlers.formating_text import register_formatting_text
+from tgbot.handlers.group_handler import register_group_handler
+from tgbot.handlers.group_moderator import register_group_moderator
+from tgbot.handlers.manage_chat import register_manage_chat
 from tgbot.handlers.new_menu import register_new_menu
 from tgbot.handlers.echo import register_echo
 from tgbot.handlers.menu import register_menu
@@ -62,6 +67,8 @@ def register_all_middlewares(dp: Dispatcher):
 def register_all_filters(dp: Dispatcher):
     """Register all filters"""
     dp.filters_factory.bind(role.AdminFilter)
+    dp.filters_factory.bind(GroupChatFilter)
+    dp.filters_factory.bind(PrivateChatFilter)
     dp.filters_factory.bind(reply_kb.CloseBtn)
 
 
@@ -73,6 +80,9 @@ def register_all_handlers(dp: Dispatcher):
     register_menu(dp)
     register_new_menu(dp)
     register_formatting_text(dp)
+    register_manage_chat(dp)
+    register_group_moderator(dp)
+    register_group_handler(dp)
     register_echo(dp)
 
 
