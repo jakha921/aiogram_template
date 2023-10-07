@@ -22,6 +22,7 @@ from tgbot.handlers.manage_chat import register_manage_chat
 from tgbot.handlers.new_menu import register_new_menu
 from tgbot.handlers.echo import register_echo
 from tgbot.handlers.menu import register_menu
+from tgbot.middlewares.check_subs import BigBrother
 from tgbot.middlewares.throtling import ThrottlingMiddleware
 from tgbot.middlewares.db import DbMiddleware
 from tgbot.middlewares.translate import TranslationMiddleware
@@ -63,6 +64,7 @@ def register_all_middlewares(dp: Dispatcher):
     dp.setup_middleware(ThrottlingMiddleware())
     dp.setup_middleware(DbMiddleware())
     dp.setup_middleware(TranslationMiddleware())
+    dp.setup_middleware(BigBrother())
 
 
 def register_all_filters(dp: Dispatcher):
