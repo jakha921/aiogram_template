@@ -92,14 +92,14 @@ async def user_lang_choosen(cb: CallbackQuery, callback_data: dict,
 
 
 def register_user(dp: Dispatcher):
-    dp.register_message_handler(
-        user_start,
-        PrivateChatFilter(),
-        CommandStart()
-        # commands=["/start"],
-        # commands=["start"],
-        # state="*",
-    )
+    # dp.register_message_handler(
+    #     user_start,
+    #     PrivateChatFilter(),
+    #     # CommandStart()
+    #     # commands=["/start"],
+    #     # commands=["start"],
+    #     # state="*",
+    # )
     dp.register_message_handler(
         user_me,
         commands=["me"],

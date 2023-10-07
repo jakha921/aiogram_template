@@ -14,6 +14,7 @@ from tgbot.filters import role, reply_kb
 from tgbot.filters.group import GroupChatFilter
 from tgbot.filters.private import PrivateChatFilter
 from tgbot.handlers.anketa import register_testing
+from tgbot.handlers.check_subs import register_subscription
 from tgbot.handlers.formating_text import register_formatting_text
 from tgbot.handlers.group_handler import register_group_handler
 from tgbot.handlers.group_moderator import register_group_moderator
@@ -80,6 +81,7 @@ def register_all_handlers(dp: Dispatcher):
     register_menu(dp)
     register_new_menu(dp)
     register_formatting_text(dp)
+    register_subscription(dp)
     register_manage_chat(dp)
     register_group_moderator(dp)
     register_group_handler(dp)

@@ -74,3 +74,6 @@ def load_config(path: str) -> Config:
         webhook=WebhookConfig(**config["webhook"]),
         db=DbConfig(**config["db"]),
     )
+
+
+CHANNELS = ['@test_channel_bot921', '-1001440486142']

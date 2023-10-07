@@ -102,3 +102,11 @@ async def type_sushi_keyboard():
         InlineKeyboardButton("🥩 Meat", callback_data="type_sushi:meat"),
     )
     return menu_keyboards
+
+
+async def check_button():
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(
+        InlineKeyboardButton("Confirm", callback_data='check_subs')
+    )
+    return keyboard
