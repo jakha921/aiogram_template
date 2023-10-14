@@ -1,111 +1,60 @@
-# ChannelBot
+# ChannelBot Middleware
 
-## Usage
-
-```python
-# config.py
-
-# to get channel id, send msg to get my id bot
-CHANNELS = ['@test_channel_bot921', '-1001440486142']
-```
 
 ```python
-# misc/subscription.py
+# middleware/check_subs.py
 
-from typing import Union
-
-from aiogram import Bot
+from aiogram import types
+from aiogram.dispatcher.handler import CancelHandler
+from aiogram.dispatcher.middlewares import BaseMiddleware
 from loguru import logger
 
-
-# Define an asynchronous function called check_subscriptions
-async def check_subscriptions(user_id: int, channel: Union[int, str]):
-    """Check subscriptions"""
-
-    # Log a message to indicate that we are checking subscriptions
-    logger.info("Checking subscriptions...")
-
-    # Get the current instance of the Bot class
-    bot = Bot.get_current()
-
-    # Use the bot instance to get information about a chat member asynchronously
-    member = await bot.get_chat_member(user_id=user_id, chat_id=channel)
-
-    # Return a boolean indicating whether the user is a chat member
-    return member.is_chat_member()
-
-```
-
-```python
-# handker/check_subs.py
-from aiogram import Dispatcher
-from aiogram.types import Message, CallbackQuery
-
 from tgbot.config import CHANNELS
-from tgbot.filters.private import PrivateChatFilter
-from tgbot.keyboards.inline import check_button
 from tgbot.misc.subscription import check_subscriptions
 
 
-async def show_channels(msg: Message):
-    from bot import bot
+class BigBrother(BaseMiddleware):
+    """
+    Check user subscription
+    """
 
-    channel_format = str()
+    async def on_pre_process_update(self, update: types.Update, data: dict):
+        if update.message:
+            user = update.message.from_user
+            if update.message.text in ['/start', '/help']:
+                return
+        elif update.callback_query:
+            user = update.callback_query.from_user
 
-    # load from bot config
-    for channel in CHANNELS:
-        chat = await bot.get_chat(channel)
-        invite_link = await chat.export_invite_link()
+        result = "To use this bot, you need to join the following channels: \n\n"
+        final_status = True
 
-        channel_format += f"👉 <a href='{invite_link}'>{chat.title}</a>\n"
+        for channel in CHANNELS:
+            from bot import bot  # You should import bot appropriately in your application
 
-    await msg.answer(f"To use this bot, you need to join the following channels: \n\n"
-                     f"{channel_format}",
-                     disable_web_page_preview=True,
-                     reply_markup=await check_button())
+            status = await check_subscriptions(user_id=user.id, channel=channel)
+            final_status *= status
 
+            channel = await bot.get_chat(channel)
+            if not status:
+                invite_link = await channel.export_invite_link()
+                result += f"👉 <a href='{invite_link}'>{channel.title}</a>\n\n"
 
-async def checker(call: CallbackQuery):
-    from bot import bot
-    await call.answer()
-    result = str()
+        if not final_status:
+            # Ensure you have a message to reply to before attempting to reply
+            if update.message:
+                await update.message.reply(result, disable_web_page_preview=True)
+                raise CancelHandler()
 
-    for channel in CHANNELS:
-        status = await check_subscriptions(user_id=call.from_user.id,
-                                           channel=channel)
-        channel = await bot.get_chat(channel)
-        if status:
-            result += f"✅ You are subscribed to the channel: {channel.title}\n"
-        else:
-            invite_link = await channel.export_invite_link()
-            result += f"❌ You are not subscribed to the channel: \n" \
-                      f"👉 <a href='{invite_link}'>{channel.title}</a>\n\n"
-
-    await call.message.answer(result, disable_web_page_preview=True)
-
-
-def register_subscription(dp: Dispatcher):
-    dp.register_message_handler(
-        show_channels,
-        PrivateChatFilter(),
-        commands=["start"],
-        state="*"
-    )
-    dp.register_callback_query_handler(
-        checker,
-        text="check_subs"
-    )
 ```
 
 ```python
-# keyboards/inline.py
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+# bot.py
 
-
-async def check_button():
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    keyboard.add(
-        InlineKeyboardButton("Confirm", callback_data='check_subs')
-    )
-    return keyboard
+def register_all_middlewares(dp: Dispatcher):
+    """Register all middlewares"""
+    dp.setup_middleware(ThrottlingMiddleware())
+    dp.setup_middleware(DbMiddleware())
+    dp.setup_middleware(TranslationMiddleware())
+    dp.setup_middleware(BigBrother())
 ```
