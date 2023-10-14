@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
-from tgbot.keyboards.callback_data import sub_menu_callback, sushi_type_callback
+from tgbot.keyboards.callback_data import sub_menu_callback, sushi_type_callback, create_post_callback
 from tgbot.misc.utils import Map
 
 cd_choose_lang = CallbackData("choosen_language", "lang_code")
@@ -109,4 +109,17 @@ async def check_button():
     keyboard.add(
         InlineKeyboardButton("Confirm", callback_data='check_subs')
     )
+    return keyboard
+
+
+async def channel_new_post_or_cancel():
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[[
+            InlineKeyboardButton("✅ Publish", callback_data=create_post_callback.new(action="post")),
+            # create_post:confirm
+            InlineKeyboardButton("❌Cancel", callback_data=create_post_callback.new(action="cancel"))
+            # create_post:cancel
+        ]]
+    )
+
     return keyboard

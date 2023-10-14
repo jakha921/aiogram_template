@@ -1,10 +1,12 @@
 from aiogram import Dispatcher
 from aiogram.types import Message, ContentType
 
+from tgbot.filters.group import GroupChatFilter
+
 
 async def echo(msg: Message):
     """Bot echo handler"""
-    await msg.answer(msg.text)
+    await msg.answer('Group echo: \n' + msg.text)
 
 
 async def group_greeting(msg: Message):
@@ -21,9 +23,9 @@ async def group_bye(msg: Message):
 
 
 def register_group_handler(dp: Dispatcher):
-    dp.register_message_handler(
-        echo,
-    ),
+    # dp.register_message_handler(
+    #     echo,
+    # ),
     dp.register_message_handler(
         group_greeting,
         content_types=ContentType.NEW_CHAT_MEMBERS

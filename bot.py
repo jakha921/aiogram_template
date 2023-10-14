@@ -13,22 +13,23 @@ from tgbot.config import load_config
 from tgbot.filters import role, reply_kb
 from tgbot.filters.group import GroupChatFilter
 from tgbot.filters.private import PrivateChatFilter
-from tgbot.handlers.anketa import register_testing
-from tgbot.handlers.check_subs import register_subscription
-from tgbot.handlers.formating_text import register_formatting_text
-from tgbot.handlers.group_handler import register_group_handler
-from tgbot.handlers.group_moderator import register_group_moderator
-from tgbot.handlers.manage_chat import register_manage_chat
-from tgbot.handlers.new_menu import register_new_menu
-from tgbot.handlers.echo import register_echo
-from tgbot.handlers.menu import register_menu
+from tgbot.handlers.channels.post_manager import register_new_post
+from tgbot.handlers.users.anketa import register_testing
+from tgbot.handlers.channels.check_subs import register_subscription
+from tgbot.handlers.users.formating_text import register_formatting_text
+from tgbot.handlers.groups.group_handler import register_group_handler
+from tgbot.handlers.groups.group_moderator import register_group_moderator
+from tgbot.handlers.groups.manage_chat import register_manage_chat
+from tgbot.handlers.users.new_menu import register_new_menu
+from tgbot.handlers.users.echo import register_echo
+from tgbot.handlers.users.menu import register_menu
 from tgbot.middlewares.check_subs import BigBrother
 from tgbot.middlewares.throtling import ThrottlingMiddleware
 from tgbot.middlewares.db import DbMiddleware
 from tgbot.middlewares.translate import TranslationMiddleware
 from tgbot.services.database import create_db_session
-from tgbot.handlers.admin import register_admin
-from tgbot.handlers.user import register_user
+from tgbot.handlers.users.admin import register_admin
+from tgbot.handlers.users.user import register_user
 
 # load config from bot.ini file
 config = load_config("bot.ini")
@@ -87,6 +88,7 @@ def register_all_handlers(dp: Dispatcher):
     register_manage_chat(dp)
     register_group_moderator(dp)
     register_group_handler(dp)
+    register_new_post(dp)
     register_echo(dp)
 
 

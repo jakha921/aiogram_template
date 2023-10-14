@@ -1,38 +1,3 @@
-# Manage Post ChannelBot
-
-```python
-# keyboards/callback_data.py
-
-create_post_callback = CallbackData("create_post", "action")
-```
-
-```python
-# keyboard/inline.py
-
-async def channel_new_post_or_cancel():
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[[
-            InlineKeyboardButton("✅ Publish", callback_data=create_post_callback.new(action="post")),
-            # create_post:confirm
-            InlineKeyboardButton("❌Cancel", callback_data=create_post_callback.new(action="cancel"))
-            # create_post:cancel
-        ]]
-    )
-
-    return keyboard
-```
-
-```python
-# misc/states.py
-
-class NewPost(StatesGroup):
-    NewMessage = State()
-    Confirm = State()
-```
-
-```python
-# handlers/users/post_manage.py
-
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, ContentType, CallbackQuery
 
@@ -141,23 +106,3 @@ def register_new_post(dp):
         AdminFilter(),
         create_post_callback.filter(action="cancel")
     )
-```
-
-```python
-# bot.py
-
-def register_all_handlers(dp: Dispatcher):
-    """Register all handlers"""
-    register_admin(dp)
-    register_user(dp)
-    register_testing(dp)
-    register_menu(dp)
-    register_new_menu(dp)
-    register_formatting_text(dp)
-    register_subscription(dp)
-    register_manage_chat(dp)
-    register_group_moderator(dp)
-    register_group_handler(dp)
-    register_new_post(dp)
-    register_echo(dp)
-```
