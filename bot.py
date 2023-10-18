@@ -20,6 +20,7 @@ from tgbot.handlers.users.formating_text import register_formatting_text
 from tgbot.handlers.groups.group_handler import register_group_handler
 from tgbot.handlers.groups.group_moderator import register_group_moderator
 from tgbot.handlers.groups.manage_chat import register_manage_chat
+from tgbot.handlers.users.media_handler import register_media
 from tgbot.handlers.users.new_menu import register_new_menu
 from tgbot.handlers.users.echo import register_echo
 from tgbot.handlers.users.menu import register_menu
@@ -79,6 +80,7 @@ def register_all_filters(dp: Dispatcher):
 def register_all_handlers(dp: Dispatcher):
     """Register all handlers"""
     register_admin(dp)
+    register_media(dp)
     register_user(dp)
     register_testing(dp)
     register_menu(dp)
