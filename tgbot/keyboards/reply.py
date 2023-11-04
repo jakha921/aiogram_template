@@ -14,3 +14,20 @@ async def phone_number(texts: Map):
         resize_keyboard=True,
     )
     return keyboard
+
+
+async def phone_and_location():
+    """Phone number and location inline keyboard"""
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="Send phone number", request_contact=True)
+            ],
+            [
+                KeyboardButton(text="Send location", request_location=True)
+            ],
+            [KeyboardButton(text="Close")],
+        ],
+        resize_keyboard=True,
+    )
+    return keyboard

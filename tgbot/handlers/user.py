@@ -6,17 +6,50 @@ from aiogram.dispatcher.handler import ctx_data
 from loguru import logger
 
 from tgbot.keyboards.inline import choose_language, cd_choose_lang
-from tgbot.keyboards.reply import phone_number
+from tgbot.keyboards.reply import phone_number, phone_and_location
 from tgbot.middlewares.translate import TranslationMiddleware
 from tgbot.models.models import TGUser
 from tgbot.misc.utils import Map, find_button_text
 from tgbot.services.database import AsyncSession
 
 
-async def user_start(m: Message, texts: Map):
+async def user_start(msg: Message, db_session: AsyncSession, texts: Map):
     """User start command handler"""
-    logger.info(f'User {m.from_user.id} started the bot')
-    await m.reply(texts.user.hi.format(mention=m.from_user.get_mention()))
+    try:
+        logger.info(f'User {msg.from_user.id} started the bot')
+
+        # Register in the database if not registered
+        db_user = await TGUser.get_user(db_session, telegram_id=msg.from_user.id)
+        print('db_user', db_user)
+        print('user', msg.from_user)
+
+        if not db_user:
+            logger.info('User not found in the database. Registering...')
+            user = await TGUser.add_user(
+                db_session=db_session,
+                telegram_id=msg.from_user.id,
+                firstname=msg.from_user.first_name,
+                lastname=msg.from_user.last_name,
+                username=msg.from_user.username,
+                lang_code=msg.from_user.language_code
+            )
+
+            print('user', user)
+
+            # Get total users count
+            total = await TGUser.users_count(db_session)
+            print('total', total)
+
+            # Notify admin about the new registration
+            config = msg.bot.get('config')
+            for admin in config.tg_bot.admins_id:
+                await msg.bot.send_message(admin, f"New user has been registered: {msg.from_user.get_mention()}")
+                await msg.bot.send_message(admin, f"Total users: {total}")
+
+        await msg.reply(f"Sava, {msg.from_user.get_mention()}")
+
+    except Exception as e:
+        logger.error(f"An error occurred in user_start: {e}")
 
 
 async def user_me(m: Message, db_user: TGUser, texts: Map):
@@ -81,6 +114,11 @@ async def user_lang_choosen(cb: CallbackQuery, callback_data: dict,
     await cb.message.edit_text(texts.user.lang_choosen.format(lang=btn_text), reply_markup='')
 
 
+async def bar(msg: Message):
+    """Bar command handler"""
+    await msg.reply("Bar", reply_markup=await phone_and_location())
+
+
 def register_user(dp: Dispatcher):
     dp.register_message_handler(
         user_start,
@@ -115,5 +153,10 @@ def register_user(dp: Dispatcher):
     dp.register_callback_query_handler(
         user_lang_choosen,
         cd_choose_lang.filter(),
+        state="*",
+    )
+    dp.register_message_handler(
+        bar,
+        commands=["foo"],
         state="*",
     )
